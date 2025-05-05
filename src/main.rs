@@ -1,8 +1,10 @@
-
 use tokio::net::{TcpListener, TcpStream};
 
 use std::io;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+mod commands;
+use crate::commands::Command;
 
 #[tokio::main]
 async fn main() {
@@ -33,20 +35,12 @@ async fn accept_connection(mut socket: TcpStream) -> io::Result<()> {
       Ok(n) => {
         println!("Accepted connection");
         let request = String::from_utf8_lossy(&buffer[..n]);
-        if request.contains("PING") {
 
-          socket.write_all(b"+PONG\r\n").await?;
-
-        } else if request.contains("ECHO") {
-
-          let response = format!("{}\r\n", request.trim_start_matches("ECHO "));
-          socket.write_all(response.as_bytes()).await?;
-
+        if let Some(command) = commands::get_command(&request) {
+          command.execute(&mut socket).await?;
         } else {
-
           println!("Received: {}", request);
           socket.write_all(b"-ERR unknown command\r\n").await?;
-
         }
       }
       Err(e) => {
