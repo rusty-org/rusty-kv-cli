@@ -1,34 +1,69 @@
-[![progress-banner](https://backend.codecrafters.io/progress/redis/fe451bfd-4a7d-49c7-a3c7-5eaf76fc8e5c)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Rusty KV Store
 
-This is a starting point for Rust solutions to the
-["Build Your Own Redis" Challenge](https://codecrafters.io/challenges/redis).
+A Redis-compatible key-value store server implementation written in Rust.
 
-In this challenge, you'll build a toy Redis clone that's capable of handling
-basic commands like `PING`, `SET` and `GET`. Along the way we'll learn about
-event loops, the Redis protocol and more.
+## Overview
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+Rusty KV Store is a lightweight Redis-compatible server that implements Redis
+commands using Rust's async I/O capabilities with Tokio. This project aims to
+provide a high-performance, memory-efficient alternative to Redis while
+maintaining protocol compatibility.
 
-# Passing the first stage
+## Features
 
-The entry point for your Redis implementation is in `src/main.rs`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
+- TCP server implementation with async I/O
+- Redis protocol compatibility
+- Command handling architecture
+- Currently implemented commands:
+  - `PING` - Test server connectivity
+  - `ECHO` - Echo back the provided message
 
-```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
+## How It Works 🔍
+
+### Redis Client-Server Communication Diagram 📊
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Redis Server
+
+    C->>S: PING
+    S->>C: PONG
+    C->>S: SET key "value"
+    S->>C: OK
+    C->>S: GET key
+    S->>C: "value"
 ```
 
-That's all!
+1. **Client** sends a command to the **Redis Server**.
+2. **Redis Server** processes the command.
+3. **Redis Server** sends back the response to the **Client**.
 
-# Stage 2 & beyond
+### Running the Server
 
-Note: This section is for stages 2 and beyond.
+```bash
+cargo run --release
+```
 
-1. Ensure you have `cargo (1.82)` installed locally
-1. Run `./your_program.sh` to run your Redis server, which is implemented in
-   `src/main.rs`. This command compiles your Rust project, so it might be slow
-   the first time you run it. Subsequent runs will be fast.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+By default, the server listens on `127.0.0.1:6379`.
+
+### Connecting to the Server
+
+You can use the standard Redis CLI or any Redis client to connect to the server:
+
+```bash
+# debian/ubuntu
+sudo apt-get install socat
+
+# macOS (using Homebrew)
+brew install socat
+
+# Connect to the server
+socat - TCP:localhost:6379
+
+# Then type commands in RESP format
+PING
+ECHO Hello World!!
+SET key value
+GET key
+```

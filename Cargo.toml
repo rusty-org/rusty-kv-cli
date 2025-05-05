@@ -1,5 +1,5 @@
 [package]
-name = "redis-client"
+name = "rusty-kv-store"
 version = "0.1.0"
 authors = ["Piush Bose <dev.bosepiush@gmail.com>"]
 edition = "2024"
