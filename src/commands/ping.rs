@@ -6,17 +6,17 @@ use tokio::net::TcpStream;
 pub struct PingCommand;
 
 impl PingCommand {
-    pub fn new() -> Self {
-        PingCommand
-    }
+  pub fn new() -> Self {
+    PingCommand
+  }
 }
 
 impl Command for PingCommand {
-    async fn execute(&self, socket: &mut TcpStream) -> io::Result<()> {
-        socket.write_all(b"+PONG\r\n").await
-    }
+  async fn execute(&self, socket: &mut TcpStream) -> io::Result<()> {
+    socket.write_all(b"+PONG\r\n").await
+  }
 
-    fn _matches(&self, request: &str) -> bool {
-        request.contains("PING")
-    }
+  fn _matches(&self, request: &str) -> bool {
+    request.contains("PING")
+  }
 }
