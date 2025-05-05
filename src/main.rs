@@ -1,5 +1,7 @@
-use tokio::net::{TcpListener, TcpStream};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::{
+  net::{TcpListener, TcpStream},
+  io::{AsyncReadExt, AsyncWriteExt},
+};
 use dotenv::dotenv;
 use log::{info, error};
 use simple_logger::SimpleLogger;
