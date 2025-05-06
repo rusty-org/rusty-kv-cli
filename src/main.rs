@@ -9,7 +9,7 @@ use simple_logger::SimpleLogger;
 use std::io;
 
 mod commands;
-use commands::Command;
+use commands::utils::Command;
 
 #[tokio::main]
 async fn main() {
@@ -31,13 +31,13 @@ async fn main() {
   loop {
     let stream = listener.accept().await;
     match stream {
-      Ok((stream, _)) => {
+      Ok((stream, addr)) => {
         tokio::spawn(async move {
           if let Err(e) = accept_connection(stream).await {
             error!("Error handling connection: {}", e);
           }
         });
-        info!("Accepted a new connection");
+        info!("Accepted a new connection from {}", addr);
       }
       Err(e) => {
         error!("Error accepting connection: {}", e);

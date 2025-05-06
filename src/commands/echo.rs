@@ -1,4 +1,4 @@
-use crate::commands::Command;
+use crate::commands::utils::Command;
 use std::io;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
