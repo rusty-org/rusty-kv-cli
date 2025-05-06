@@ -1,7 +1,7 @@
 pub mod echo;
-pub mod ping;
-pub mod lib;
 pub mod help;
+pub mod lib;
+pub mod ping;
 
 use lib::CommandsList;
 

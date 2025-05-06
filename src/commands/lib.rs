@@ -2,12 +2,12 @@ use std::io;
 
 use tokio::net::TcpStream;
 
-use super::{echo::EchoCommand, ping::PingCommand, help::HelpCommand};
+use super::{echo::EchoCommand, help::HelpCommand, ping::PingCommand};
 
 pub enum CommandsList {
   Ping(PingCommand),
   Echo(EchoCommand),
-  Help(HelpCommand)
+  Help(HelpCommand),
 }
 
 impl CommandsList {
@@ -21,7 +21,7 @@ impl CommandsList {
         } else {
           None
         }
-      },
+      }
       "HELP" => Some(CommandsList::Help(HelpCommand::new())),
       _ => None,
     }

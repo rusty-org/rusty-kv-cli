@@ -19,3 +19,14 @@ run-server:
 .PHONY: run
 run:
 	@$(MAKE) -j2 run-cli run-server
+
+.PHONY: format
+format:
+	@cargo fmt -- --config-path .rustfmt.toml
+
+.PHONY: clean
+clean:
+	@echo "Cleaning up..." && \
+		rm -rf ./cli/tmp && \
+		rm -rf ./target && \
+		echo "Cleaned up successfully"

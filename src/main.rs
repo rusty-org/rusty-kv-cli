@@ -1,42 +1,48 @@
 // @NOTE External dependencies
-use dotenv::dotenv;
-use log::{info, error};
+use log::{error, info, warn};
 use simple_logger::SimpleLogger;
-use tokio::{
-  net::{TcpListener, TcpStream},
-  io::{AsyncReadExt, AsyncWriteExt},
-};
-
-// @NOTE Std dependencies
-use std::io;
+use tokio::net::TcpListener;
 
 // @NOTE Local dependencies
 mod commands;
-use commands::lib::Command;
+mod utils;
+use utils::{network::NetworkUtils, settings::Settings};
 
 #[tokio::main]
 async fn main() {
-  SimpleLogger::new().init().unwrap();
+  SimpleLogger::new()
+    .with_colors(true)
+    .with_level(log::LevelFilter::Trace)
+    .with_timestamp_format(time::macros::format_description!("[year]-[month]-[day] [hour]:[minute]:[second]"))
+    .init()
+    .unwrap();
+  info!("Initializing Redis clone server...");
+  warn!("Intialised default logger");
 
-  info!("Starting Redis clone server...");
+  let settings = Settings::new(Some("config.toml"));
+  info!("Loaded settings from config.toml");
 
-  dotenv().unwrap_or_else(|_| {
-    error!("Failed to load .env file, exiting...");
-    std::process::exit(1);
-  });
+  warn!("Starting Redis clone server...");
 
-  let kv_host = std::env::var("KV_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
-  let kv_port = std::env::var("KV_PORT").unwrap_or_else(|_| "6379".to_string());
-  let listener = TcpListener::bind(format!("{}:{}", kv_host, kv_port)).await.unwrap();
+  let kv_host = settings
+    .get("server.network.host")
+    .unwrap_or_else(|| "127.0.0.1".to_string());
+  let kv_port = settings
+    .get("server.network.port")
+    .unwrap_or_else(|| "6379".to_string());
 
-  info!("Listening on {}:{}", kv_host, kv_port);
+  let listener = TcpListener::bind(format!("{}:{}", kv_host, kv_port))
+    .await
+    .unwrap();
+  warn!("Bound to TCP - {}:{}", kv_host, kv_port);
+  info!("Listening for incoming connections...");
 
   loop {
     let stream = listener.accept().await;
     match stream {
       Ok((stream, addr)) => {
         tokio::spawn(async move {
-          if let Err(e) = accept_connection(stream).await {
+          if let Err(e) = NetworkUtils.accept_connection(stream).await {
             error!("Error handling connection: {}", e);
           }
         });
@@ -44,34 +50,6 @@ async fn main() {
       }
       Err(e) => {
         error!("Error accepting connection: {}", e);
-      }
-    }
-  }
-}
-
-async fn accept_connection(mut socket: TcpStream) -> io::Result<()> {
-  loop {
-    // @NOTE Max size of the buffer to read from the socket
-    let mut buffer = [0; 1024]; // @TODO make this dynamic
-    match socket.read(&mut buffer).await {
-      Ok(0) => {
-        info!("Connection closed");
-        return Ok(());
-      }
-      Ok(n) => {
-        info!("Accepted connection");
-        let request = String::from_utf8_lossy(&buffer[..n]);
-
-        if let Some(command) = commands::get_command(&request) {
-          command.execute(&mut socket).await?;
-        } else {
-          info!("Received: {}", request);
-          socket.write_all(b"-ERR unknown command\r\n").await?;
-        }
-      }
-      Err(e) => {
-        error!("Error reading from socket: {}", e);
-        return Err(e);
       }
     }
   }
