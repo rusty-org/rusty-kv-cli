@@ -1,9 +1,9 @@
 pub mod echo;
 pub mod ping;
-pub mod utils;
+pub mod lib;
 pub mod help;
 
-use utils::CommandsList;
+use lib::CommandsList;
 
 // Parse the request to identify which command is being requested
 fn parse_command(request: &str) -> Option<(String, &str)> {

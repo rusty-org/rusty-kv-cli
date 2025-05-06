@@ -1,7 +1,7 @@
 use std::io;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
-pub use crate::commands::utils::Command;
+pub use crate::commands::lib::Command;
 
 pub struct HelpCommand;
 

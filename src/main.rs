@@ -1,15 +1,18 @@
+// @NOTE External dependencies
+use dotenv::dotenv;
+use log::{info, error};
+use simple_logger::SimpleLogger;
 use tokio::{
   net::{TcpListener, TcpStream},
   io::{AsyncReadExt, AsyncWriteExt},
 };
-use dotenv::dotenv;
-use log::{info, error};
-use simple_logger::SimpleLogger;
 
+// @NOTE Std dependencies
 use std::io;
 
+// @NOTE Local dependencies
 mod commands;
-use commands::utils::Command;
+use commands::lib::Command;
 
 #[tokio::main]
 async fn main() {
