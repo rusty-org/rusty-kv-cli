@@ -1,6 +1,7 @@
 #include "include/include.hpp"
 #include "client/client.hpp"
 #include "utils/utils.hpp"
+#include "utils/resp_encoder.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -13,13 +14,16 @@ int main(int argc, char *argv[])
     std::cout << client.getAddr() << "> ";
     std::getline(std::cin, input);
 
-    std::string cmd = command_to_lowercase(input);
+    std::string cmd = cmd::command_to_lowercase(input);
     if (cmd.empty())
       continue;
     if (cmd == "exit" || cmd == "quit")
       break;
 
-    if (client.sendCommand(cmd))
+    // @NOTE Encode the command using RESP protocol
+    std::string resp_command = resp::encode_raw_command(input);
+
+    if (client.sendCommand(resp_command))
     {
       std::string response = client.receiveResponse();
       std::cout << response;
