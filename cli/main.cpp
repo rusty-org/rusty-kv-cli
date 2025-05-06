@@ -1,4 +1,4 @@
-#include "utils/include.hpp"
+#include "include/include.hpp"
 #include "client/client.hpp"
 #include "utils/utils.hpp"
 
@@ -13,20 +13,11 @@ int main(int argc, char *argv[])
     std::cout << client.getAddr() << "> ";
     std::getline(std::cin, input);
 
-    const icu::UnicodeString uni_command(input.c_str(), "UTF-8");
-    if (uni_command.isEmpty())
-    {
+    std::string cmd = command_to_lowercase(input);
+    if (cmd.empty())
       continue;
-    }
-
-    icu::UnicodeString command_lower = std::move(uni_command);
-    command_lower = command_lower.toLower().trim();
-    std::string cmd;
-    command_lower.toUTF8String(cmd);
     if (cmd == "exit" || cmd == "quit")
-    {
       break;
-    }
 
     if (client.sendCommand(cmd))
     {
