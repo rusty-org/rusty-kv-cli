@@ -1,25 +1,27 @@
 use crate::commands::lib::Command;
-use std::io;
-use tokio::io::AsyncWriteExt;
-use tokio::net::TcpStream;
+use crate::resp::value::Value;
+use anyhow::{Result, anyhow};
 
+#[allow(dead_code)]
 pub struct EchoCommand {
-  request: String,
+  message: String,
 }
 
+#[allow(dead_code)]
 impl EchoCommand {
-  pub fn new(request: String) -> Self {
-    EchoCommand { request }
+  pub fn new(message: String) -> Self {
+    Self { message }
   }
 }
 
 impl Command for EchoCommand {
-  async fn execute(&self, socket: &mut TcpStream) -> io::Result<()> {
-    let response = format!("{}\r\n", self.request.trim_start_matches("ECHO "));
-    socket.write_all(response.as_bytes()).await
-  }
-
-  fn _matches(&self, request: &str) -> bool {
-    request.contains("ECHO")
+  fn execute(&self, args: Vec<String>) -> Result<Value> {
+    if !args.is_empty() {
+      Ok(Value::BulkString(args[0].clone()))
+    } else if !self.message.is_empty() {
+      Ok(Value::BulkString(self.message.clone()))
+    } else {
+      Err(anyhow!("ECHO requires at least one argument"))
+    }
   }
 }

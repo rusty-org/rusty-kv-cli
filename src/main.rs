@@ -1,23 +1,19 @@
 // @NOTE External dependencies
 use log::{error, info, warn};
-use simple_logger::SimpleLogger;
 use tokio::net::TcpListener;
 
 // @NOTE Local dependencies
 mod commands;
+mod resp;
 mod utils;
-use utils::{network::NetworkUtils, settings::Settings};
+
+use utils::{logger::Logger, network::NetworkUtils, settings::Settings};
 
 #[tokio::main]
 async fn main() {
-  SimpleLogger::new()
-    .with_colors(true)
-    .with_level(log::LevelFilter::Trace)
-    .with_timestamp_format(time::macros::format_description!("[year]-[month]-[day] [hour]:[minute]:[second]"))
-    .init()
-    .unwrap();
+  Logger::setup();
+
   info!("Initializing Redis clone server...");
-  warn!("Intialised default logger");
 
   let settings = Settings::new(Some("config.toml"));
   info!("Loaded settings from config.toml");
@@ -42,7 +38,7 @@ async fn main() {
     match stream {
       Ok((stream, addr)) => {
         tokio::spawn(async move {
-          if let Err(e) = NetworkUtils.accept_connection(stream).await {
+          if let Err(e) = NetworkUtils::accept_connection(stream).await {
             error!("Error handling connection: {}", e);
           }
         });

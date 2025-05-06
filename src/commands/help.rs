@@ -1,23 +1,27 @@
 pub use crate::commands::lib::Command;
-use std::io;
-use tokio::io::AsyncWriteExt;
-use tokio::net::TcpStream;
+use crate::resp::value::Value;
+use anyhow::Result;
 
+#[allow(dead_code)]
 pub struct HelpCommand;
 
+#[allow(dead_code)]
 impl HelpCommand {
   pub fn new() -> Self {
-    HelpCommand
+    Self
   }
 }
 
 impl Command for HelpCommand {
-  async fn execute(&self, socket: &mut TcpStream) -> io::Result<()> {
-    let response = "+HELP: This is the help command.\r\n";
-    socket.write_all(response.as_bytes()).await
-  }
+  fn execute(&self, _args: Vec<String>) -> Result<Value> {
+    let help_text = "Available commands:\n\
+                         PING - Test connection\n\
+                         ECHO <message> - Echo back a message\n\
+                         GET <key> - Get value for key\n\
+                         SET <key> <value> - Set key to value\n\
+                         DEL <key> [<key> ...] - Delete keys\n\
+                         HELP - Show this help";
 
-  fn _matches(&self, request: &str) -> bool {
-    request.contains("HELP")
+    Ok(Value::BulkString(help_text.to_string()))
   }
 }

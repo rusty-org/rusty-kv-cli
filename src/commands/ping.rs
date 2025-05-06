@@ -1,22 +1,21 @@
 use crate::commands::lib::Command;
-use std::io;
-use tokio::io::AsyncWriteExt;
-use tokio::net::TcpStream;
+use crate::resp::value::Value;
+use anyhow::Result;
 
 pub struct PingCommand;
 
 impl PingCommand {
   pub fn new() -> Self {
-    PingCommand
+    Self
   }
 }
 
 impl Command for PingCommand {
-  async fn execute(&self, socket: &mut TcpStream) -> io::Result<()> {
-    socket.write_all(b"+PONG\r\n").await
-  }
-
-  fn _matches(&self, request: &str) -> bool {
-    request.contains("PING")
+  fn execute(&self, args: Vec<String>) -> Result<Value> {
+    if args.is_empty() {
+      Ok(Value::SimpleString("PONG".to_string()))
+    } else {
+      Ok(Value::BulkString(args[0].clone()))
+    }
   }
 }

@@ -1,46 +1,44 @@
-use std::io;
-
-use log::{error, info, warn};
-use tokio::{
-  io::{AsyncReadExt, AsyncWriteExt},
-  net::TcpStream,
-};
-
-use crate::commands::{self, lib::Command};
+use crate::commands::executor::CommandExecutor;
+use crate::resp::handler::RespHandler;
+use crate::resp::value::Value;
+use anyhow::Result;
+use log::{debug, info};
+use tokio::net::TcpStream;
 
 pub struct NetworkUtils;
 
 impl NetworkUtils {
-  pub async fn accept_connection(&self, mut socket: TcpStream) -> io::Result<()> {
-    loop {
-      // @NOTE Max size of the buffer to read from the socket
-      let mut buffer = [0; 1024]; // @TODO make this dynamic
-      match socket.read(&mut buffer).await {
-        Ok(0) => {
-          warn!("Connection closed");
-          return Ok(());
-        }
-        Ok(n) => {
-          let request = String::from_utf8_lossy(&buffer[..n]);
+  pub async fn accept_connection(stream: TcpStream) -> Result<()> {
+    let peer_addr = stream.peer_addr()?;
+    info!("Handling connection from: {}", peer_addr);
 
-          info!("Request received: {}", request);
+    let mut handler = RespHandler::new(stream);
+    let executor = CommandExecutor::new();
 
-          if let Some(command) = commands::get_command(&request) {
-            command.execute(&mut socket).await?;
-          } else {
-            info!("Received: {}", request);
-            socket.write_all(b"-ERR unknown command\r\n").await?;
+    while let Some(value) = handler.read_value().await? {
+      debug!("Received: {:?}", value);
 
-            error!("Unknown command received: {}", request);
+      if let Some((cmd, args)) = value.to_command() {
+        debug!("Command: {} with args: {:?}", cmd, args);
 
-            info!("Request details: {}", request);
+        let result = executor.execute(&cmd, args).await;
+        match result {
+          Ok(response) => {
+            handler.write_value(response).await?;
+          }
+          Err(e) => {
+            let error_msg = format!("ERR {}", e);
+            handler.write_value(Value::Error(error_msg)).await?;
           }
         }
-        Err(e) => {
-          error!("Error reading from socket: {}", e);
-          return Err(e);
-        }
+      } else {
+        handler
+          .write_value(Value::Error("ERR invalid command format".to_string()))
+          .await?;
       }
     }
+
+    info!("Connection closed: {}", peer_addr);
+    Ok(())
   }
 }
