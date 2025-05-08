@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bytes::{Buf, BytesMut};
+use bytes::BytesMut;
 
 use super::value::Value;
 
@@ -24,7 +24,10 @@ impl RespParser {
       '$' => parser.parse_bulk_string(buf),
       '*' => parser.parse_array(buf),
       '#' => parser.parse_boolean(buf),
-      _ => Err(anyhow::anyhow!("Unknown RESP type: {:?}", std::str::from_utf8(&buf[..]).ok())),
+      _ => Err(anyhow::anyhow!(
+        "Unknown RESP type: {:?}",
+        std::str::from_utf8(&buf[..]).ok()
+      )),
     }
   }
 

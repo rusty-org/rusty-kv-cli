@@ -35,6 +35,7 @@ impl CommandsList {
   }
 
   // Method to execute command with string args - for backward compatibility
+  #[allow(dead_code)]
   pub async fn execute_with_args(&self, args: Vec<String>) -> Result<Value> {
     match self {
       CommandsList::Ping(cmd) => cmd.execute(args),

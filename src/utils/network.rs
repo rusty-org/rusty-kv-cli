@@ -2,7 +2,7 @@ use crate::commands::executor::CommandExecutor;
 use crate::resp::handler::RespHandler;
 use crate::resp::value::Value;
 use anyhow::Result;
-use log::{debug, info, error};
+use log::{debug, error, info};
 use tokio::net::TcpStream;
 
 pub struct NetworkUtils;

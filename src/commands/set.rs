@@ -2,6 +2,8 @@ use crate::commands::lib::Command;
 use crate::resp::value::Value;
 use anyhow::{Result, anyhow};
 
+#[derive(Debug)]
+#[allow(dead_code)]
 pub struct SetCommand {
   key_value: String,
 }
