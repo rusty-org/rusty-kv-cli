@@ -1,3 +1,5 @@
+use core::error;
+
 // @NOTE External dependencies
 use log::{error, info, warn};
 use tokio::net::TcpListener;
@@ -22,16 +24,26 @@ async fn main() {
 
   let kv_host = settings
     .get::<String>("server.network.host")
-    .unwrap_or_else(|| "127.0.0.1".to_string());
+    .unwrap_or_else(|| {
+      warn!("No host specified, using default");
+      "127.0.0.1".to_string()
+    });
   let kv_port = settings
     .get::<i16>("server.network.port")
-    .unwrap_or_else(|| 6379);
+    .unwrap_or_else(|| {
+      warn!("No port specified, using default");
+      6379
+    });
 
   let listener = TcpListener::bind(format!("{}:{}", kv_host, kv_port))
     .await
     .unwrap();
 
-  warn!("Bound to TCP - {:?}", listener.local_addr());
+  warn!("Bound to TCP - {:?}", listener.local_addr().unwrap_or_else(|e| {
+    error!("Failed to get local address, {e}");
+    std::net::SocketAddr::new("127.0.0.1".parse().unwrap(), 0)
+  }));
+
   info!("Listening for incoming connections...");
 
   loop {
