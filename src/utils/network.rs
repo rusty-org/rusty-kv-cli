@@ -2,7 +2,7 @@ use crate::commands::executor::CommandExecutor;
 use crate::resp::handler::RespHandler;
 use crate::resp::value::Value;
 use anyhow::Result;
-use log::{debug, info};
+use log::{debug, info, error};
 use tokio::net::TcpStream;
 
 pub struct NetworkUtils;
@@ -12,14 +12,17 @@ impl NetworkUtils {
     let peer_addr = stream.peer_addr()?;
     info!("Handling connection from: {}", peer_addr);
 
+    debug!("Initializing RESP handler");
     let mut handler = RespHandler::new(stream);
+
+    debug!("Initializing executor for incoming commands");
     let executor = CommandExecutor::new();
 
     while let Some(value) = handler.read_value().await? {
       debug!("Received: {:?}", value);
 
       if let Some((cmd, args)) = value.to_command() {
-        debug!("Command: {} with args: {:?}", cmd, args);
+        info!("Command: {} with args: {:?}", cmd, args);
 
         let result = executor.execute(&cmd, args).await;
         match result {
@@ -32,6 +35,7 @@ impl NetworkUtils {
           }
         }
       } else {
+        error!("Eror handling command, invalid format - {:?}", value);
         handler
           .write_value(Value::Error("ERR invalid command format".to_string()))
           .await?;

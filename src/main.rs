@@ -21,16 +21,17 @@ async fn main() {
   warn!("Starting Redis clone server...");
 
   let kv_host = settings
-    .get("server.network.host")
+    .get::<String>("server.network.host")
     .unwrap_or_else(|| "127.0.0.1".to_string());
   let kv_port = settings
-    .get("server.network.port")
-    .unwrap_or_else(|| "6379".to_string());
+    .get::<i16>("server.network.port")
+    .unwrap_or_else(|| 6379);
 
   let listener = TcpListener::bind(format!("{}:{}", kv_host, kv_port))
     .await
     .unwrap();
-  warn!("Bound to TCP - {}:{}", kv_host, kv_port);
+
+  warn!("Bound to TCP - {:?}", listener.local_addr());
   info!("Listening for incoming connections...");
 
   loop {

@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "A simple server configuration"
 
 [server.network]
-host = "127.0.0.1"
+host = "0.0.0.0"
 port = 6379
 preferred_connection = "tcp"
 ssl = false

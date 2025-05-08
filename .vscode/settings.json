@@ -5,5 +5,10 @@
     "markdown": true,
     "scminput": false,
     "cpp": true
+  },
+  "files.associations": {
+    ".php_cs": "php",
+    ".php_cs.dist": "php",
+    "iosfwd": "cpp"
   }
 }

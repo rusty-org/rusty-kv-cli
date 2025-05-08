@@ -3,7 +3,6 @@
 
 namespace resp
 {
-
   std::string encode_bulk_string(const std::string &str)
   {
     std::ostringstream oss;
@@ -101,4 +100,4 @@ namespace resp
     return encode_command(cmd, args);
   }
 
-} // namespace resp
+}
