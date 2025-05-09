@@ -23,6 +23,9 @@ run:
 .PHONY: format
 format:
 	@cargo fmt -- --config-path .rustfmt.toml
+	@clang-format -i -style=file \
+		$(shell find . -name "*.cpp") \
+		$(shell find . -name "*.hpp")
 
 .PHONY: clean
 clean:

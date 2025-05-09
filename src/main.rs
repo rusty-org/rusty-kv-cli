@@ -1,5 +1,3 @@
-use core::error;
-
 // @NOTE External dependencies
 use log::{error, info, warn};
 use tokio::net::TcpListener;
@@ -39,10 +37,13 @@ async fn main() {
     .await
     .unwrap();
 
-  warn!("Bound to TCP - {:?}", listener.local_addr().unwrap_or_else(|e| {
-    error!("Failed to get local address, {e}");
-    std::net::SocketAddr::new("127.0.0.1".parse().unwrap(), 0)
-  }));
+  warn!(
+    "Bound to TCP - {:?}",
+    listener.local_addr().unwrap_or_else(|e| {
+      error!("Failed to get local address, {e}");
+      std::net::SocketAddr::new("127.0.0.1".parse().unwrap(), 0)
+    })
+  );
 
   info!("Listening for incoming connections...");
 
