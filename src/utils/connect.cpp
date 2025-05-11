@@ -1,23 +1,22 @@
-#include "../client/client.hpp"
+#include "argument.hpp"
+#include "utils.hpp"
 
+namespace network {
 KvClient connect_to_client(int argc, char* argv[]) {
-  // @INFO Default values for the server
-  std::string kv_host = "127.0.0.1";
-  int kv_port = 6379;
-
+  // --------------------------------------------------
   // @INFO Parse the command line arguments
-  if (argc >= 2) {
-    kv_host = argv[1];
-  }
+  // --------------------------------------------------
+  KvConnectionInfo connection_info;
+  arg::parse(argc, argv, connection_info);
 
-  if (argc >= 3) {
-    kv_port = std::stoi(argv[2]);
-  }
+  std::cout << "Connecting to " << connection_info.url << std::endl;
 
+  // --------------------------------------------------
+  // @INFO Connect to the server
+  // --------------------------------------------------
   KvClient client;
-  if (!client.connect(kv_host, kv_port)) {
-    std::cerr << "Failed to connect to the server at " << kv_host << ":"
-              << kv_port << std::endl;
+  if (!client.connect(connection_info)) {
+    std::cerr << "Failed to connect to the server at " << connection_info.url << std::endl;
     exit(1);
   }
 
@@ -29,3 +28,4 @@ KvClient connect_to_client(int argc, char* argv[]) {
 
   return client;
 }
+}  // namespace network

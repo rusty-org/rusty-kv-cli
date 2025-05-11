@@ -1,7 +1,7 @@
 BasedOnStyle: Google
 Language: Cpp
 IndentWidth: 2
-ColumnLimit: 80
+ColumnLimit: 160
 DerivePointerAlignment: false
 PointerAlignment: Left
 AllowShortFunctionsOnASingleLine: Inline

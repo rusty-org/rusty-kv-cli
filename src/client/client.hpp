@@ -1,7 +1,15 @@
 #ifndef _CLIENT_HPP_
 #define _CLIENT_HPP_
 
-#include "../include/include.hpp"
+#include "include/include.hpp"
+
+struct KvConnectionInfo {
+  std::string user;
+  std::string password;
+  std::string host;
+  std::string url;
+  int port;
+};
 
 class KvClient {
  private:
@@ -22,7 +30,7 @@ class KvClient {
 
   // Connecting and disconnecting to the server
   void disconnect();
-  bool connect(const std::string& host, int port);
+  bool connect(KvConnectionInfo& info);
   bool isConnected() const;
 
   // Sending and receiving data

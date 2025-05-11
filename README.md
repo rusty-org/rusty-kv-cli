@@ -39,20 +39,49 @@ server.
 
 ## Usage
 
-To connect to a server:
+To connect to a server, you can use either individual command line arguments or
+a connection URL:
+
+### Using Individual Arguments
 
 ```bash
-./tmp/cli <host> <port>
+./rusty-kv-cli -h <host> -p <port> -U <username> -P <password>
+```
+
+Arguments:
+
+- `-h`: Server hostname or IP address (default: 127.0.0.1)
+- `-p`: Server port (default: 6379)
+- `-U`: Username for authentication (optional)
+- `-P`: Password for authentication (optional)
+
+### Using Connection URL
+
+```bash
+./rusty-kv-cli -url kv://<username>:<password>@<host>:<port>
+```
+
+Examples:
+
+```bash
+# Connect to localhost with default port
+./rusty-kv-cli -h 127.0.0.1 -p 6379
+
+# Connect with username and password
+./rusty-kv-cli -U admin -P secret -h 192.168.1.100 -p 6379
+
+# Using connection URL
+./rusty-kv-cli -url kv://admin:secret@192.168.1.100:6379
 ```
 
 Once connected, you can enter commands at the prompt:
 
 ```
-127.0.0.1:6379> SET mykey "Hello World"
+192.168.1.100:6379> SET mykey "Hello World"
 OK
-127.0.0.1:6379> GET mykey
+192.168.1.100:6379> GET mykey
 "Hello World"
-127.0.0.1:6379> exit
+192.168.1.100:6379> exit
 ```
 
 Type `exit` or `quit` to disconnect from the server and exit the program.

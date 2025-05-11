@@ -11,6 +11,10 @@
 
 #include <cstring>
 #include <iostream>
+#include <regex>
+#include <sstream>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 #endif  // _INCLUDE_HPP_

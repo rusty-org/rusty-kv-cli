@@ -1,36 +1,33 @@
 #include "client.hpp"
 
-#include "../include/include.hpp"
-
-bool KvClient::connect(const std::string& host, int port) {
-  // Create socket
+bool KvClient::connect(KvConnectionInfo& info) {
+  // @INFO Create socket
   socket_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (socket_fd < 0) {
-    std::cerr << "Error creating socket: " << strerror(errno) << std::endl;
+    std::cerr << "Error creating socket: " << strerror(ECONNABORTED) << std::endl;
     return false;
   }
 
-  // Set up server address
+  // @INFO Set up server address
   server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(port);
+  server_addr.sin_port = htons(info.port);
 
-  if (inet_pton(AF_INET, host.c_str(), &server_addr.sin_addr) <= 0) {
-    std::cerr << "Invalid address: " << strerror(errno) << std::endl;
+  if (inet_pton(AF_INET, info.host.c_str(), &server_addr.sin_addr) <= 0) {
+    std::cerr << "Invalid address: " << strerror(ECONNREFUSED) << std::endl;
     close(socket_fd);
     return false;
   }
 
-  // Connect to server
-  if (::connect(socket_fd, (struct sockaddr*)&server_addr,
-                sizeof(server_addr)) < 0) {
-    std::cerr << "Connection failed: " << strerror(errno) << std::endl;
+  // @INFO Connect to server
+  if (::connect(socket_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+    std::cerr << "Connection failed: " << strerror(ECONNABORTED) << std::endl;
     close(socket_fd);
     return false;
   }
 
   connected = true;
-  std::cout << "Connected to " << host << ":" << port << std::endl;
-  this->addr = host + ":" + std::to_string(port);
+  std::cout << "Connected to " << info.host << ":" << info.port << std::endl;
+  this->addr = info.host + ":" + std::to_string(info.port);
   return true;
 }
 

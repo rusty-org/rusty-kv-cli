@@ -4,7 +4,7 @@
 #include "utils/utils.hpp"
 
 int main(int argc, char* argv[]) {
-  KvClient client = connect_to_client(argc, argv);
+  KvClient client = network::connect_to_client(argc, argv);
 
   std::string input;
 

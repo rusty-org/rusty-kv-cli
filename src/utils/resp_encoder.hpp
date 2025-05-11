@@ -1,14 +1,12 @@
 #ifndef _RESP_ENCODER_HPP_
 #define _RESP_ENCODER_HPP_
 
-#include <string>
-#include <vector>
+#include "include/include.hpp"
 
 namespace resp {
 
 // Encode a command and its arguments into the RESP protocol format
-std::string encode_command(const std::string& cmd,
-                           const std::vector<std::string>& args);
+std::string encode_command(const std::string& cmd, const std::vector<std::string>& args);
 
 // Parse a raw command string into command and args, then encode it
 std::string encode_raw_command(const std::string& raw_cmd);
