@@ -10,7 +10,14 @@ bool parse_connection_uri(const std::string& uri, KvConnectionInfo& info) {
     if (match.size() == 5) {
       info.user = match[1].str();
       info.password = match[2].str();
-      info.host = match[3].str();
+
+      // @INFO convert localhost to an actual IPv4 address
+      if (match[3].str() == "localhost") {
+        info.host = "127.0.0.1";
+      } else {
+        info.host = match[3].str();
+      }
+
       info.port = std::stoi(match[4].str());
       return true;
     }

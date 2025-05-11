@@ -68,9 +68,12 @@ void parse(int argc, char* argv[], KvConnectionInfo& info) {
     }
   }
 
-  // Set the URL string for display purposes if it wasn't set via -url
+  // ---------------------------------------------------
+  // @INFO Set the URL string for display purposes if it wasn't set via -url
+  // ---------------------------------------------------
   if (info.url.empty()) {
     std::string credentials = "";
+
     if (!info.user.empty()) {
       credentials = info.user;
       if (!info.password.empty()) {
@@ -78,6 +81,12 @@ void parse(int argc, char* argv[], KvConnectionInfo& info) {
       }
       credentials += "@";
     }
+
+    // @INFO convert localhost to an IPv4 address
+    if (info.host == "localhost") {
+      info.host = "127.0.0.1";
+    }
+
     info.url = "kv://" + credentials + info.host + ":" + std::to_string(info.port);
   }
 }
