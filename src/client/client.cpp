@@ -1,10 +1,13 @@
 #include "client.hpp"
 
+#include "utils/logger.hpp"
+
 bool KvClient::connect(KvConnectionInfo& info) {
   // @INFO Create socket
   socket_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (socket_fd < 0) {
-    std::cerr << "Error creating socket: " << strerror(ECONNABORTED) << std::endl;
+    std::string error_msg = "Socket creation failed: " + std::string(strerror(errno));
+    Logger::error(error_msg);
     return false;
   }
 
@@ -13,20 +16,22 @@ bool KvClient::connect(KvConnectionInfo& info) {
   server_addr.sin_port = htons(info.port);
 
   if (inet_pton(AF_INET, info.host.c_str(), &server_addr.sin_addr) <= 0) {
-    std::cerr << "Invalid address: " << strerror(ECONNREFUSED) << std::endl;
+    std::string error_msg = "Invalid address: " + std::string(strerror(ECONNREFUSED));
+    Logger::error(error_msg);
     close(socket_fd);
     return false;
   }
 
   // @INFO Connect to server
   if (::connect(socket_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-    std::cerr << "Connection failed: " << strerror(ECONNABORTED) << std::endl;
+    std::string error_msg = "Connection failed: " + std::string(strerror(errno));
+    Logger::error(error_msg);
     close(socket_fd);
     return false;
   }
 
   connected = true;
-  std::cout << "Connected to " << info.host << ":" << info.port << std::endl;
+  Logger::info("Connected to server at " + info.host + ":" + std::to_string(info.port));
   this->addr = info.host + ":" + std::to_string(info.port);
   return true;
 }
@@ -46,13 +51,14 @@ bool KvClient::isConnected() const {
 
 bool KvClient::sendCommand(const std::string& command) {
   if (!connected) {
-    std::cerr << "Not connected to server" << std::endl;
+    Logger::error("Not connected to server");
     return false;
   }
 
   ssize_t bytes_sent = send(socket_fd, command.c_str(), command.length(), 0);
   if (bytes_sent < 0) {
-    std::cerr << "Error sending command: " << strerror(errno) << std::endl;
+    std::string error_msg = "Error sending command: " + std::string(strerror(errno));
+    Logger::error(error_msg);
     return false;
   }
 
@@ -61,7 +67,7 @@ bool KvClient::sendCommand(const std::string& command) {
 
 std::string KvClient::receiveResponse() {
   if (!connected) {
-    std::cerr << "Not connected to server" << std::endl;
+    Logger::error("Not connected to server");
     return "Not connected to server";
   }
 
@@ -69,7 +75,8 @@ std::string KvClient::receiveResponse() {
   ssize_t bytes_received = recv(socket_fd, buffer, BUFFER_SIZE - 1, 0);
 
   if (bytes_received < 0) {
-    std::cerr << "Error receiving response: " << strerror(errno) << std::endl;
+    std::string err_msg = "Error receiving response: " + std::string(strerror(errno));
+    Logger::error(err_msg);
     return "Error receiving response";
   }
 

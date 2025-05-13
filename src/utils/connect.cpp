@@ -1,4 +1,5 @@
 #include "argument.hpp"
+#include "logger.hpp"
 #include "utils.hpp"
 
 namespace network {
@@ -9,20 +10,20 @@ KvClient connect_to_client(int argc, char* argv[]) {
   KvConnectionInfo connection_info;
   arg::parse(argc, argv, connection_info);
 
-  std::cout << "Connecting to " << connection_info.url << std::endl;
+  Logger::info("Connecting to " + connection_info.url);
 
   // --------------------------------------------------
   // @INFO Connect to the server
   // --------------------------------------------------
   KvClient client;
   if (!client.connect(connection_info)) {
-    std::cerr << "Failed to connect to the server at " << connection_info.url << std::endl;
+    Logger::error("Failed to connect to the server at " + connection_info.url);
     exit(1);
   }
 
   // @INFO Check if the connection was successful
   if (!client.isConnected()) {
-    std::cerr << "Failed to connect to the server." << std::endl;
+    Logger::error("Failed to connect to the server.");
     exit(1);
   }
 

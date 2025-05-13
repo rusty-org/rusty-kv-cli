@@ -1,5 +1,6 @@
 #include "client/client.hpp"
 #include "include/include.hpp"
+#include "utils/logger.hpp"
 #include "utils/resp_encoder.hpp"
 #include "utils/utils.hpp"
 
@@ -9,7 +10,7 @@ int main(int argc, char* argv[]) {
   std::string input;
 
   while (true) {
-    std::cout << client.getAddr() << "> ";
+    Logger::client(client.getAddr() + " > ");
     std::getline(std::cin, input);
 
     std::string cmd = cmd::command_to_lowercase(input);
@@ -26,7 +27,7 @@ int main(int argc, char* argv[]) {
   }
 
   client.disconnect();
-  std::cout << "Disconnected from server." << std::endl;
+  Logger::warn("Disconnecting from server...");
 
   return 0;
 }
