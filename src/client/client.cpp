@@ -49,6 +49,26 @@ bool KvClient::isConnected() const {
   return connected;
 }
 
+bool KvClient::isAuthenticated() const {
+  return authenticated;
+}
+
+void KvClient::setAuthenticated(bool __authenticated) {
+  authenticated = __authenticated;
+}
+
+void KvClient::setConnectionInfo(KvConnectionInfo& __info) {
+  connection_info = __info;
+}
+
+KvConnectionInfo KvClient::getConnectionInfo() {
+  return connection_info;
+}
+
+std::string KvClient::getAddr() const {
+  return connection_info.user.empty() ? addr : connection_info.user + "@" + addr;
+}
+
 bool KvClient::sendCommand(const std::string& command) {
   if (!connected) {
     Logger::error("Not connected to server");

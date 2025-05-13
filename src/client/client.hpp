@@ -13,32 +13,40 @@ struct KvConnectionInfo {
 
 class KvClient {
  private:
-  int socket_fd;
-  bool connected;
+  int socket_fd{-1};
+  bool connected{false};
+  bool authenticated{false};
+  std::string addr{""};
   struct sockaddr_in server_addr;
-  std::string addr;
+  struct KvConnectionInfo connection_info{
+      .user = "",
+      .password = "",
+      .host = "",
+      .url = "",
+      .port = 0,
+  };
 
   static const int BUFFER_SIZE = 1024;
 
  public:
-  KvClient() : socket_fd(-1), connected(false) {
-    memset(&server_addr, 0, sizeof(server_addr));
-    addr = "";
-  }
+  KvClient() { memset(&server_addr, 0, sizeof(server_addr)); }
 
   ~KvClient() { disconnect(); }
 
   // Connecting and disconnecting to the server
   void disconnect();
-  bool connect(KvConnectionInfo& info);
+  bool connect(KvConnectionInfo& __info);
   bool isConnected() const;
+  bool isAuthenticated() const;
+  void setAuthenticated(bool __authenticated);
+  void setConnectionInfo(KvConnectionInfo& __info);
+  KvConnectionInfo getConnectionInfo();
 
   // Sending and receiving data
   std::string receiveResponse();
-  bool sendCommand(const std::string& command);
+  bool sendCommand(const std::string& __command);
 
-  // Getter for addr
-  std::string getAddr() const { return addr; }
+  std::string getAddr() const;
 };
 
 #endif  // _CLIENT_HPP_

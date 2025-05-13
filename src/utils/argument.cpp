@@ -6,6 +6,9 @@ void parse(int argc, char* argv[], KvConnectionInfo& info) {
   // Set default values
   info.host = "127.0.0.1";
   info.port = 6379;
+  info.user = "";
+  info.password = "";
+  info.url = "";
 
   // ---------------------------------------------------
   // @INFO If the user does not provide any arguments,
