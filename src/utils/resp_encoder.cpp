@@ -7,6 +7,18 @@ std::string encode_bulk_string(const std::string& str) {
   return oss.str();
 }
 
+std::string encode_simple_string(const std::string& str) {
+  std::ostringstream oss;
+  oss << "+" << str << "\r\n";
+  return oss.str();
+}
+
+std::string encode_error(const std::string& str) {
+  std::ostringstream oss;
+  oss << "-" << str << "\r\n";
+  return oss.str();
+}
+
 std::string encode_array(const std::vector<std::string>& elements) {
   std::ostringstream oss;
   oss << "*" << elements.size() << "\r\n";

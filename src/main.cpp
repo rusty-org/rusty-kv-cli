@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     std::string auth_command = resp::encode_command("AUTH", {connection_info.user, connection_info.password});
     if (client.sendCommand(auth_command)) {
       std::string response = client.receiveResponse();
-      if (response == "+OK\r\n") {
+      if (response == resp::encode_simple_string("OK")) {
         Logger::success("Authentication successful.");
       } else {
         Logger::error("Authentication failed: " + response);

@@ -13,6 +13,8 @@ std::string encode_raw_command(const std::string& raw_cmd);
 
 // Helper functions
 std::string encode_bulk_string(const std::string& str);
+std::string encode_simple_string(const std::string& str);
+std::string encode_error(const std::string& str);
 std::string encode_array(const std::vector<std::string>& elements);
 std::vector<std::string> tokenize(const std::string& input);
 
