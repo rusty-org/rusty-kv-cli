@@ -1,3 +1,4 @@
+#include "client/client.hpp"
 #include "utils.hpp"
 
 namespace network {

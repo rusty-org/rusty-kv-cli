@@ -1,8 +1,24 @@
 #include "client.hpp"
 
-#include "utils/logger.hpp"
+#include <arpa/inet.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
-bool KvClient::connect(KvConnectionInfo& info) {
+#include "../utils/logger.hpp"
+#include "../utils/utils.hpp"
+
+// Constructor
+KvClient::KvClient() : sock(-1), connected(false), authenticated(false), socket_fd(-1) {}
+
+// Destructor
+KvClient::~KvClient() {
+  disconnect();
+}
+
+bool KvClient::connect(const std::string& host, int port) {
   // @INFO Create socket
   socket_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (socket_fd < 0) {
@@ -11,11 +27,16 @@ bool KvClient::connect(KvConnectionInfo& info) {
     return false;
   }
 
-  // @INFO Set up server address
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(info.port);
+  // Set connection info
+  connectionInfo.host = host;
+  connectionInfo.port = port;
 
-  if (inet_pton(AF_INET, info.host.c_str(), &server_addr.sin_addr) <= 0) {
+  // @INFO Set up server address
+  struct sockaddr_in server_addr;
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(port);
+
+  if (inet_pton(AF_INET, host.c_str(), &server_addr.sin_addr) <= 0) {
     std::string error_msg = "Invalid address: " + std::string(strerror(ECONNREFUSED));
     Logger::error(error_msg);
     close(socket_fd);
@@ -31,8 +52,8 @@ bool KvClient::connect(KvConnectionInfo& info) {
   }
 
   connected = true;
-  Logger::info("Connected to server at " + info.host + ":" + std::to_string(info.port));
-  this->addr = info.host + ":" + std::to_string(info.port);
+  Logger::info("Connected to server at " + host + ":" + std::to_string(port));
+  this->addr = host + ":" + std::to_string(port);
   return true;
 }
 
@@ -57,16 +78,26 @@ void KvClient::setAuthenticated(bool __authenticated) {
   authenticated = __authenticated;
 }
 
-void KvClient::setConnectionInfo(KvConnectionInfo& __info) {
-  connection_info = __info;
+void KvClient::setConnectionInfo(const KvConnectionInfo& info) {
+  connectionInfo = info;
 }
 
-KvConnectionInfo KvClient::getConnectionInfo() {
-  return connection_info;
+void KvClient::setConnectionInfoFromAuthCommand(const std::string& authCommand) {
+  // Parse the AUTH command to extract username and password
+  std::vector<std::string> args = cmd::split(authCommand, ' ');
+  if (args.size() > 1) {
+    connectionInfo.setUser(args.size() > 1 ? args[1] : "");
+    connectionInfo.setPassword(args.size() > 2 ? args[2] : "");
+    connectionInfo.requireAuth = true;
+  }
+}
+
+const KvConnectionInfo* KvClient::getConnectionInfo() const {
+  return &connectionInfo;
 }
 
 std::string KvClient::getAddr() const {
-  return connection_info.user.empty() ? addr : connection_info.user + "@" + addr;
+  return connectionInfo.user.empty() ? addr : connectionInfo.user + "@" + addr;
 }
 
 bool KvClient::sendCommand(const std::string& command) {

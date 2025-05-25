@@ -1,8 +1,11 @@
 #ifndef _CLI_UTILS_HPP_
 #define _CLI_UTILS_HPP_
 
-#include "client/client.hpp"
 #include "include/include.hpp"
+
+// Forward declarations
+class KvClient;
+class KvConnectionInfo;
 
 namespace network {
 // This function connects to the server and returns a KvClient object
@@ -26,6 +29,17 @@ namespace cmd {
 // message It uses the UnicodeString class from the ICU library to handle
 // Unicode strings
 std::string command_to_lowercase(std::string& input);
+
+// This function splits a string into a vector of strings using a specified
+// separator character
+// It iterates through the string and finds the positions of the separator
+// It returns a vector of strings containing the substrings between the separators
+// Example:
+// ```
+// std::vector<std::string> result = split("hello world", ' ');
+// ```
+// // result will contain {"hello", "world"}
+std::vector<std::string> split(const std::string& s, char seperator);
 }  // namespace cmd
 
 #endif  // _CLI_UTILS_HPP_

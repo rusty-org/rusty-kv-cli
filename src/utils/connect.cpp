@@ -1,4 +1,5 @@
 #include "argument.hpp"
+#include "client/client.hpp"
 #include "logger.hpp"
 #include "utils.hpp"
 
@@ -11,6 +12,7 @@ KvClient connect_to_client(int argc, char* argv[]) {
   KvConnectionInfo connection_info;
 
   arg::parse(argc, argv, connection_info);
+
   client.setConnectionInfo(connection_info);
 
   Logger::info("Connecting to " + connection_info.url);
@@ -27,7 +29,7 @@ KvClient connect_to_client(int argc, char* argv[]) {
   // --------------------------------------------------
   // @INFO Connect to the server
   // --------------------------------------------------
-  if (!client.connect(connection_info)) {
+  if (!client.connect(connection_info.host, connection_info.port)) {
     Logger::error("Failed to connect to the server at " + connection_info.url);
     exit(1);
   }

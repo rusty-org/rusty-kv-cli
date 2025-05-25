@@ -1,3 +1,4 @@
+#include "client/client.hpp"
 #include "logger.hpp"
 #include "utils.hpp"
 
