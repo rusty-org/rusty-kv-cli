@@ -22,5 +22,6 @@ Makefile
 *.cmake
 compile_commands.json
 .cmake/
+.cache/
 CTestTestfile.cmake
 _deps/
