@@ -1,24 +1,44 @@
+/**
+ * @file resp_encoder.cpp
+ * @brief RESP protocol encoder implementations.
+ */
+
 #include "resp_encoder.hpp"
 
 namespace resp {
+
+/**
+ * @brief Encode a bulk string: `$<len>\r\n<data>\r\n`.
+ */
 std::string encode_bulk_string(const std::string& str) {
   std::ostringstream oss;
   oss << "$" << str.length() << "\r\n" << str << "\r\n";
   return oss.str();
 }
 
+/**
+ * @brief Encode a simple string: `+<str>\r\n`.
+ */
 std::string encode_simple_string(const std::string& str) {
   std::ostringstream oss;
   oss << "+" << str << "\r\n";
   return oss.str();
 }
 
+/**
+ * @brief Encode an error: `-<message>\r\n`.
+ */
 std::string encode_error(const std::string& str) {
   std::ostringstream oss;
   oss << "-" << str << "\r\n";
   return oss.str();
 }
 
+/**
+ * @brief Encode an array of bulk strings.
+ *
+ * Formats as `*<count>\r\n` followed by each element.
+ */
 std::string encode_array(const std::vector<std::string>& elements) {
   std::ostringstream oss;
   oss << "*" << elements.size() << "\r\n";
@@ -28,6 +48,11 @@ std::string encode_array(const std::vector<std::string>& elements) {
   return oss.str();
 }
 
+/**
+ * @brief Split raw input into tokens, respecting quoted substrings.
+ *
+ * Handles unclosed quotes by collecting remainder as one token.
+ */
 std::vector<std::string> tokenize(const std::string& input) {
   std::vector<std::string> tokens;
   std::istringstream iss(input);
@@ -74,6 +99,9 @@ std::vector<std::string> tokenize(const std::string& input) {
   return tokens;
 }
 
+/**
+ * @brief Combine command and args, then call `encode_array`.
+ */
 std::string encode_command(const std::string& cmd, const std::vector<std::string>& args) {
   std::vector<std::string> all_elements;
   all_elements.push_back(cmd);
@@ -82,6 +110,9 @@ std::string encode_command(const std::string& cmd, const std::vector<std::string
   return encode_array(all_elements);
 }
 
+/**
+ * @brief Parse raw command tokens and encode via `encode_command`.
+ */
 std::string encode_raw_command(const std::string& raw_cmd) {
   std::vector<std::string> tokens = tokenize(raw_cmd);
 

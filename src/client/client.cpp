@@ -1,3 +1,8 @@
+/**
+ * @file client.cpp
+ * @brief KvClient method implementations.
+ */
+
 #include "client.hpp"
 
 #include <arpa/inet.h>
@@ -11,13 +16,20 @@
 #include "../utils/utils.hpp"
 
 // Constructor
-KvClient::KvClient() : sock(-1), connected(false), authenticated(false), socket_fd(-1) {}
+KvClient::KvClient() : sock(-1), connected(false), authenticated(false), BUFFER_SIZE(1024), socket_fd(-1) {}
 
-// Destructor
+// Destructor ensures cleanup
 KvClient::~KvClient() {
   disconnect();
 }
 
+/**
+ * @brief Create TCP socket and connect to server.
+ *
+ * @param host Server address.
+ * @param port Server port.
+ * @return True if successful, false on error.
+ */
 bool KvClient::connect(const std::string& host, int port) {
   // @INFO Create socket
   socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -57,6 +69,9 @@ bool KvClient::connect(const std::string& host, int port) {
   return true;
 }
 
+/**
+ * @brief Close the socket and update connection state.
+ */
 void KvClient::disconnect() {
   if (socket_fd >= 0) {
     close(socket_fd);
@@ -66,22 +81,31 @@ void KvClient::disconnect() {
   }
 }
 
+/** @copydoc KvClient::isConnected */
 bool KvClient::isConnected() const {
   return connected;
 }
 
+/** @copydoc KvClient::isAuthenticated */
 bool KvClient::isAuthenticated() const {
   return authenticated;
 }
 
+/** @brief Set authentication flag. */
 void KvClient::setAuthenticated(bool __authenticated) {
   authenticated = __authenticated;
 }
 
+/** @brief Store connection parameters. */
 void KvClient::setConnectionInfo(const KvConnectionInfo& info) {
   connectionInfo = info;
 }
 
+/**
+ * @brief Extracts user and password from raw AUTH command.
+ *
+ * @param authCommand Raw "AUTH user pass" string.
+ */
 void KvClient::setConnectionInfoFromAuthCommand(const std::string& authCommand) {
   // Parse the AUTH command to extract username and password
   std::vector<std::string> args = cmd::split(authCommand, ' ');
@@ -92,14 +116,26 @@ void KvClient::setConnectionInfoFromAuthCommand(const std::string& authCommand) 
   }
 }
 
+/** @copydoc KvClient::getConnectionInfo */
 const KvConnectionInfo* KvClient::getConnectionInfo() const {
   return &connectionInfo;
 }
 
+/**
+ * @brief Returns prompt address, prefixed by user if set.
+ *
+ * @return String for CLI prompt.
+ */
 std::string KvClient::getAddr() const {
   return connectionInfo.user.empty() ? addr : connectionInfo.user + "@" + addr;
 }
 
+/**
+ * @brief Send a RESP-formatted command over TCP.
+ *
+ * @param command RESP string.
+ * @return True if send succeeded.
+ */
 bool KvClient::sendCommand(const std::string& command) {
   if (!connected) {
     Logger::error("Not connected to server");
@@ -116,6 +152,11 @@ bool KvClient::sendCommand(const std::string& command) {
   return true;
 }
 
+/**
+ * @brief Receive a single response chunk (up to BUFFER_SIZE-1).
+ *
+ * @return Response string or error message.
+ */
 std::string KvClient::receiveResponse() {
   if (!connected) {
     Logger::error("Not connected to server");

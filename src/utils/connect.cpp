@@ -1,9 +1,24 @@
+/**
+ * @file connect.cpp
+ * @brief Implements network::connect_to_client to parse args and open socket.
+ */
+
 #include "argument.hpp"
 #include "client/client.hpp"
 #include "logger.hpp"
 #include "utils.hpp"
 
 namespace network {
+
+/**
+ * @brief Parses CLI args, configures KvClient, and establishes socket.
+ *
+ * Exits on fatal errors (missing args or connection failure).
+ *
+ * @param argc CLI argument count.
+ * @param argv CLI argument values.
+ * @return Configured and connected KvClient.
+ */
 KvClient connect_to_client(int argc, char* argv[]) {
   // --------------------------------------------------
   // @INFO Parse the command line arguments

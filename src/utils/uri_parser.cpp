@@ -1,7 +1,23 @@
+/**
+ * @file uri_parser.cpp
+ * @brief Implementation of connection URI parsing.
+ */
+
 #include "client/client.hpp"
 #include "utils.hpp"
 
 namespace network {
+
+/**
+ * @brief Parses a KV connection URI into host, port, and optional credentials.
+ *
+ * Uses regex to extract user, password, host, and port.
+ * Converts "localhost" to "127.0.0.1".
+ *
+ * @param uri  Connection URI string.
+ * @param info KvConnectionInfo to populate.
+ * @return True if URI matched expected pattern; false otherwise.
+ */
 bool parse_connection_uri(const std::string& uri, KvConnectionInfo& info) {
   // @INFO Regular expression to match the connection URI
   std::regex uri_regex(R"(kv://(?:(\w+):(\w+)@)?([^:]+):(\d+))");

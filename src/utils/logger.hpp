@@ -1,3 +1,8 @@
+/**
+ * @file logger.hpp
+ * @brief ANSI-colored logging utilities with severity levels.
+ */
+
 #ifndef _LOGGER_HPP_
 #define _LOGGER_HPP_
 
@@ -5,6 +10,11 @@
 #include <string>
 
 namespace Logger {
+
+/**
+ * @enum Level
+ * @brief Log severity levels.
+ */
 enum class Level { INFO, WARN, ERROR, SUCCESS, CLIENT };
 
 // ANSI escape codes
@@ -16,6 +26,14 @@ const std::string GREEN = "\033[32m";
 const std::string YELLOW = "\033[33m";
 const std::string BLUE = "\033[34m";
 
+/**
+ * @brief Core logging function.
+ *
+ * Applies color/style, tag, and prints to stdout or stderr.
+ *
+ * @param level   Severity level.
+ * @param message Message to log.
+ */
 inline void log(Level level, const std::string& message) {
   std::string tag;
   std::string color;
@@ -52,21 +70,41 @@ inline void log(Level level, const std::string& message) {
   }
 }
 
+/**
+ * @brief Shortcut for INFO level.
+ */
 inline void info(const std::string& message) {
   log(Level::INFO, message);
 }
+
+/**
+ * @brief Shortcut for WARN level.
+ */
 inline void warn(const std::string& message) {
   log(Level::WARN, message);
 }
+
+/**
+ * @brief Shortcut for ERROR level.
+ */
 inline void error(const std::string& message) {
   log(Level::ERROR, message);
 }
+
+/**
+ * @brief Shortcut for SUCCESS level.
+ */
 inline void success(const std::string& message) {
   log(Level::SUCCESS, message);
 }
+
+/**
+ * @brief Client prompt style (no newline).
+ */
 inline void client(const std::string& message) {
   log(Level::CLIENT, message);
 }
+
 }  // namespace Logger
 
 #endif  // _LOGGER_HPP_

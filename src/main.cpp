@@ -1,3 +1,12 @@
+/**
+ * @file main.cpp
+ * @brief Entry point for the Rusty KV CLI application.
+ *
+ * This module establishes a connection to the key–value store server,
+ * handles optional authentication, enters a REPL for user commands
+ * (encode→send→receive), and performs a graceful shutdown.
+ */
+
 #include "client/client.hpp"
 #include "include/include.hpp"
 #include "utils/logger.hpp"
@@ -5,6 +14,16 @@
 #include "utils/utils.hpp"
 
 int main(int argc, char* argv[]) {
+  /**
+   * @brief Initialize and connect the KvClient.
+   *
+   * Parses command-line arguments and connects to the server,
+   * returning a configured client instance.
+   *
+   * @param argc Number of CLI arguments.
+   * @param argv Array of argument strings.
+   * @return Exit code (0 = success, non-zero = error).
+   */
   // --------------------------------------------------
   //  @INFO Connect and initialize the client
   // --------------------------------------------------
@@ -13,6 +32,9 @@ int main(int argc, char* argv[]) {
   const KvConnectionInfo* connection_info = client.getConnectionInfo();
   const bool authenticated = client.isAuthenticated();
 
+  /// @section Authentication
+  /// If credentials were provided, send an AUTH command
+  /// and verify the server’s response.
   if (authenticated) {
     // --------------------------------------------------
     // @INFO Authenticate the client
@@ -36,19 +58,23 @@ int main(int argc, char* argv[]) {
     Logger::warn("Starting an unauthenticated session.");
   }
 
+  /// @section REPL Loop
+  /// Main interactive loop: read user input, parse and normalize it,
+  /// handle special AUTH re-authentication, or encode & send any other command.
   // @INFO buffer to store the commands for each iteration
   std::string input;
 
   while (true) {
+    // Prompt for input
     Logger::client(client.getAddr() + "> ");
     std::getline(std::cin, input);
 
-    // @INFO transform the command to lowercase
+    /// Normalize the command to lowercase for parsing.
     std::string cmd = cmd::command_to_lowercase(input);
     if (cmd.empty()) continue;
     if (cmd == "exit" || cmd == "quit") break;
 
-    // @INFO catch if the command is AUTH so that we can reset the cli state
+    /// Handle in-loop AUTH command to reset credentials.
     std::vector<std::string> args = cmd::split(cmd, ' ');
     if (!args.empty() && args.at(0) == "auth") {
       Logger::warn("Re-authenticating...");
@@ -84,6 +110,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
+    /// Encode the command using RESP protocol and send.
     // @NOTE Encode the command using RESP protocol
     std::string resp_command = resp::encode_raw_command(input);
 
@@ -98,6 +125,8 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  /// @section Cleanup
+  /// Disconnects the client and exit, logging the shutdown.
   client.disconnect();
   Logger::warn("Disconnecting from server...");
 

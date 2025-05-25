@@ -1,8 +1,26 @@
+/**
+ * @file argument.cpp
+ * @brief Implementation of CLI argument parsing.
+ */
+
 #include "client/client.hpp"
 #include "logger.hpp"
 #include "utils.hpp"
 
 namespace arg {
+
+/**
+ * @brief Parses and validates CLI arguments into connection info.
+ *
+ * - Sets defaults: localhost:6379, no auth.
+ * - On <2 args, prints usage and exits.
+ * - Handles flags: -p, -h, -U, -P, -url.
+ * - Constructs info.url if not provided.
+ *
+ * @param argc Arg count.
+ * @param argv Arg values.
+ * @param info  KvConnectionInfo to configure.
+ */
 void parse(int argc, char* argv[], KvConnectionInfo& info) {
   // Set default values
   info.host = "127.0.0.1";
@@ -97,4 +115,5 @@ void parse(int argc, char* argv[], KvConnectionInfo& info) {
     info.url = "kv://" + credentials + info.host + ":" + std::to_string(info.port);
   }
 }
+
 }  // namespace arg
