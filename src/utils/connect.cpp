@@ -3,10 +3,10 @@
  * @brief Implements network::connect_to_client to parse args and open socket.
  */
 
-#include "argument.hpp"
-#include "client/client.hpp"
-#include "logger.hpp"
-#include "utils.hpp"
+#include "include/argument.hpp"
+#include "include/client.hpp"
+#include "include/logger.hpp"
+#include "include/utils.hpp"
 
 namespace network {
 

@@ -3,7 +3,7 @@
  * @brief Implements cmd::command_to_lowercase and cmd::split.
  */
 
-#include "utils.hpp"
+#include "include/utils.hpp"
 
 namespace cmd {
 

@@ -1,0 +1,11 @@
+<map id="src/utils/logger.hpp" name="src/utils/logger.hpp">
+<area shape="rect" id="Node000001" title="ANSI&#45;colored logging utilities with severity levels." alt="" coords="237,5,383,31"/>
+<area shape="rect" id="Node000002" href="$client_8cpp.html" title="KvClient method implementations." alt="" coords="5,79,153,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="260,37,117,81,116,76,259,32"/>
+<area shape="rect" id="Node000003" href="$main_8cpp.html" title="Entry point for the Rusty KV CLI application." alt="" coords="177,79,283,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="289,42,245,80,241,76,285,38"/>
+<area shape="rect" id="Node000004" href="$argument_8cpp.html" title="Implementation of CLI argument parsing." alt="" coords="307,79,473,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="335,38,379,76,375,80,331,42"/>
+<area shape="rect" id="Node000005" href="$connect_8cpp.html" title="Implements network::connect_to_client to parse args and open socket." alt="" coords="498,79,653,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="367,32,533,76,532,81,365,37"/>
+</map>

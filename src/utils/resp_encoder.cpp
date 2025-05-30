@@ -3,7 +3,7 @@
  * @brief RESP protocol encoder implementations.
  */
 
-#include "resp_encoder.hpp"
+#include "include/resp.hpp"
 
 namespace resp {
 

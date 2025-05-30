@@ -1,0 +1,5 @@
+<map id="KvClient" name="KvClient">
+<area shape="rect" id="Node000001" title="TCP client that communicates with the KV server via RESP." alt="" coords="5,273,215,928"/>
+<area shape="rect" id="Node000002" href="$classKvConnectionInfo.html" title="Stores host, port, credentials, and URL for a client." alt="" coords="33,5,187,211"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,211,113,257,107,257,107,211"/>
+</map>

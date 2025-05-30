@@ -3,8 +3,8 @@
  * @brief Implementation of connection URI parsing.
  */
 
-#include "client/client.hpp"
-#include "utils.hpp"
+#include "include/client.hpp"
+#include "include/utils.hpp"
 
 namespace network {
 

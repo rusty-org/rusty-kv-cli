@@ -3,17 +3,10 @@
  * @brief KvClient method implementations.
  */
 
-#include "client.hpp"
+#include "include/client.hpp"
 
-#include <arpa/inet.h>
-#include <errno.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
-#include "../utils/logger.hpp"
-#include "../utils/utils.hpp"
+#include "include/logger.hpp"
+#include "include/utils.hpp"
 
 // Constructor
 KvClient::KvClient() : sock(-1), connected(false), authenticated(false), BUFFER_SIZE(1024), socket_fd(-1) {}
@@ -34,7 +27,7 @@ bool KvClient::connect(const std::string& host, int port) {
   // @INFO Create socket
   socket_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (socket_fd < 0) {
-    std::string error_msg = "Socket creation failed: " + std::string(strerror(errno));
+    std::string error_msg = "Socket creation failed: " + std::string(strerror(ECONNABORTED));
     Logger::error(error_msg);
     return false;
   }
@@ -92,8 +85,8 @@ bool KvClient::isAuthenticated() const {
 }
 
 /** @brief Set authentication flag. */
-void KvClient::setAuthenticated(bool __authenticated) {
-  authenticated = __authenticated;
+void KvClient::setAuthenticated(bool authenticated) {
+  this->authenticated = authenticated;
 }
 
 /** @brief Store connection parameters. */
@@ -171,6 +164,9 @@ std::string KvClient::receiveResponse() {
     Logger::error(err_msg);
     return "Error receiving response";
   }
+
+  // @TODO Add some kind of parsing to the received buffer so that
+  //        we can understand what type of data we got from the server
 
   return std::string(buffer);
 }

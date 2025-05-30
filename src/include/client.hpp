@@ -6,7 +6,7 @@
 #ifndef _CLI_CLIENT_HPP_
 #define _CLI_CLIENT_HPP_
 
-#include "include/include.hpp"
+#include "include.hpp"
 
 /**
  * @class KvConnectionInfo
@@ -33,10 +33,10 @@ class KvConnectionInfo {
         requireAuth(false) {}
 
   /** @brief Set username. */
-  void setUser(const std::string& u) { user = u; }
+  void setUser(const std::string& user) { this->user = user; }
 
   /** @brief Set password. */
-  void setPassword(const std::string& p) { password = p; }
+  void setPassword(const std::string& password) { this->password = password; }
 };
 
 /**
@@ -88,6 +88,6 @@ class KvClient {
   //@}
 };
 
-#include "../utils/utils.hpp"  // CLI utilities
+#include "utils.hpp"  // CLI utilities
 
 #endif  // _CLI_CLIENT_HPP_

@@ -1,0 +1,5 @@
+<map id="src/utils/argument.hpp" name="src/utils/argument.hpp">
+<area shape="rect" id="Node000001" title="CLI argument parsing interface." alt="" coords="5,5,173,31"/>
+<area shape="rect" id="Node000002" href="$connect_8cpp.html" title="Implements network::connect_to_client to parse args and open socket." alt="" coords="12,79,167,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="92,44,92,79,87,79,87,44"/>
+</map>

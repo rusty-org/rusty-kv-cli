@@ -7,45 +7,46 @@
  * (encode→send→receive), and performs a graceful shutdown.
  */
 
-#include "client/client.hpp"
+#include "include/client.hpp"
 #include "include/include.hpp"
-#include "utils/logger.hpp"
-#include "utils/resp_encoder.hpp"
-#include "utils/utils.hpp"
+#include "include/logger.hpp"
+#include "include/resp.hpp"
+#include "include/utils.hpp"
 
+/**
+ * @brief Initialize and connect the KvClient.
+ *
+ * Parses command-line arguments and connects to the server,
+ * returning a configured client instance.
+ *
+ * @param argc Number of CLI arguments.
+ * @param argv Array of argument strings.
+ * @return Exit code (0 = success, non-zero = error).
+ */
 int main(int argc, char* argv[]) {
-  /**
-   * @brief Initialize and connect the KvClient.
-   *
-   * Parses command-line arguments and connects to the server,
-   * returning a configured client instance.
-   *
-   * @param argc Number of CLI arguments.
-   * @param argv Array of argument strings.
-   * @return Exit code (0 = success, non-zero = error).
-   */
   // --------------------------------------------------
   //  @INFO Connect and initialize the client
   // --------------------------------------------------
   KvClient client = network::connect_to_client(argc, argv);
   // Fix: Use reference instead of pointer
   const KvConnectionInfo* connection_info = client.getConnectionInfo();
-  const bool authenticated = client.isAuthenticated();
 
   /// @section Authentication
   /// If credentials were provided, send an AUTH command
   /// and verify the server’s response.
-  if (authenticated) {
+  if (client.isAuthenticated()) {
     // --------------------------------------------------
     // @INFO Authenticate the client
     // --------------------------------------------------
     std::string auth_command = resp::encode_command("AUTH", {connection_info->user, connection_info->password});
     if (client.sendCommand(auth_command)) {
       std::string response = client.receiveResponse();
+      std::string decoded_response = resp::decode(response);
       if (response == resp::encode_simple_string("OK")) {
         Logger::success("Authentication successful.");
       } else {
-        Logger::error("Authentication failed: " + response);
+        Logger::error("Authentication failed");
+        std::cerr << decoded_response << std::endl;
         client.disconnect();
         return 1;
       }
@@ -81,6 +82,7 @@ int main(int argc, char* argv[]) {
 
       if (client.sendCommand(resp::encode_raw_command(input))) {
         std::string response = client.receiveResponse();
+        std::string decoded_response = resp::decode(response);
         if (response == resp::encode_simple_string("OK")) {
           Logger::success("Re-authentication successful.");
 
@@ -96,7 +98,8 @@ int main(int argc, char* argv[]) {
           // Update our local pointer to the new connection info
           connection_info = client.getConnectionInfo();
         } else {
-          Logger::error("Re-authentication failed: " + response);
+          Logger::error("Re-authentication failed");
+          std::cerr << decoded_response << std::endl;
           continue;
         }
       } else {
@@ -121,7 +124,12 @@ int main(int argc, char* argv[]) {
     }
     if (client.sendCommand(resp_command)) {
       std::string response = client.receiveResponse();
-      std::cout << response;
+      std::string decoded_response = resp::decode(response);
+      if (response.empty()) {
+        Logger::error("Received empty response from server.");
+        continue;
+      }
+      std::cout << decoded_response << std::endl;
     }
   }
 

@@ -26,4 +26,8 @@
 #include <string>
 #include <vector>
 
+// C standard libraries
+#include <errno.h>
+#include <string.h>
+
 #endif  // _INCLUDE_HPP_
