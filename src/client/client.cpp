@@ -165,8 +165,5 @@ std::string KvClient::receiveResponse() {
     return "Error receiving response";
   }
 
-  // @TODO Add some kind of parsing to the received buffer so that
-  //        we can understand what type of data we got from the server
-
-  return std::string(buffer);
+  return std::string(buffer, bytes_received);
 }

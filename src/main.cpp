@@ -38,7 +38,10 @@ int main(int argc, char* argv[]) {
     // --------------------------------------------------
     // @INFO Authenticate the client
     // --------------------------------------------------
-    std::string auth_command = resp::encode_command("AUTH", {connection_info->user, connection_info->password});
+    // Create a vector of arguments for the AUTH command
+    std::vector<std::string> auth_args = {connection_info->user, connection_info->password};
+
+    std::string auth_command = resp::encode_command("AUTH", auth_args);
     if (client.sendCommand(auth_command)) {
       std::string response = client.receiveResponse();
       std::string decoded_response = resp::decode(response);
@@ -80,7 +83,15 @@ int main(int argc, char* argv[]) {
     if (!args.empty() && args.at(0) == "auth") {
       Logger::warn("Re-authenticating...");
 
-      if (client.sendCommand(resp::encode_raw_command(input))) {
+      // Extract username and password from args
+      std::vector<std::string> auth_args;
+      if (args.size() > 1) auth_args.push_back(args[1]);
+      if (args.size() > 2) auth_args.push_back(args[2]);
+
+      // Use the fixed encode_command function directly
+      std::string auth_command = resp::encode_command("AUTH", auth_args);
+
+      if (client.sendCommand(auth_command)) {
         std::string response = client.receiveResponse();
         std::string decoded_response = resp::decode(response);
         if (response == resp::encode_simple_string("OK")) {
@@ -113,9 +124,22 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    /// Encode the command using RESP protocol and send.
-    // @NOTE Encode the command using RESP protocol
-    std::string resp_command = resp::encode_raw_command(input);
+    // Encode the command using RESP protocol and send.
+    // Parse the command and arguments with type awareness
+    // Split by space but respect quotes and arrays
+    std::vector<std::string> tokens = resp::tokenize(input);
+
+    if (tokens.empty()) {
+      continue;
+    }
+
+    std::string command_name = tokens[0];
+
+    // Extract args, skipping the command name
+    std::vector<std::string> new_args(tokens.begin() + 1, tokens.end());
+
+    // Use our enhanced command encoder that applies type detection
+    std::string resp_command = resp::encode(input);
 
     // @INFO Send the command to the server
     if (resp_command.empty()) {

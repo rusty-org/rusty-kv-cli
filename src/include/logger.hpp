@@ -15,7 +15,7 @@ namespace Logger {
  * @enum Level
  * @brief Log severity levels.
  */
-enum class Level { INFO, WARN, ERROR, SUCCESS, CLIENT };
+enum class Level { INFO, WARN, ERROR, SUCCESS, CLIENT, DEBUG };
 
 // ANSI escape codes
 const std::string RESET = "\033[0m";
@@ -61,6 +61,11 @@ inline void log(Level level, const std::string& message) {
       color = BLUE;
       new_line = false;
       break;
+    case Level::DEBUG:
+      tag = "[DEBUG]  ";
+      color = GREEN;
+      new_line = true;
+      break;
   }
 
   if (new_line) {
@@ -75,6 +80,13 @@ inline void log(Level level, const std::string& message) {
  */
 inline void info(const std::string& message) {
   log(Level::INFO, message);
+}
+
+/**
+ * @brief Shortcut for DEBUG level.
+ */
+inline void debug(const std::string& message) {
+  log(Level::DEBUG, message);
 }
 
 /**
