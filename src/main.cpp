@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 
   while (true) {
     // Prompt for input
-    Logger::client(client.getAddr() + "> ");
+    std::cout << client.getAddr() + "> ";
     std::getline(std::cin, input);
 
     /// Normalize the command to lowercase for parsing.
