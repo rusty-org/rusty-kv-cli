@@ -103,138 +103,106 @@ bool is_array(const std::string& str) {
 }
 
 /**
- * @brief Parse a string array representation into vector of strings.
- *
- * Handles format like: [item1, item2, "quoted item"]
- *
- * @param str String containing array in format [element1, element2, ...]
- * @return Vector of array elements
- */
-std::vector<std::string> parse_array(const std::string& str) {
-  std::vector<std::string> elements;
-
-  // Remove brackets and split by comma
-  if (str.size() < 2) return elements;
-
-  std::string content = str.substr(1, str.size() - 2);
-
-  // Handle empty array
-  if (content.empty()) return elements;
-
-  // Parse elements considering quotes
-  std::string element;
-  bool in_quotes = false;
-
-  for (size_t i = 0; i < content.size(); ++i) {
-    char c = content[i];
-
-    if (c == '"') {
-      in_quotes = !in_quotes;
-    } else if (c == ',' && !in_quotes) {
-      // End of element
-      element = std::string(element.begin(), element.end());
-      element.erase(0, element.find_first_not_of(" \t"));
-      element.erase(element.find_last_not_of(" \t") + 1);
-      elements.push_back(element);
-      element.clear();
-    } else {
-      element += c;
-    }
-  }
-
-  // Add the last element if any
-  if (!element.empty()) {
-    element.erase(0, element.find_first_not_of(" \t"));
-    element.erase(element.find_last_not_of(" \t") + 1);
-    elements.push_back(element);
-  }
-
-  return elements;
-}
-
-/**
  * @brief Encode a string based on its type.
  *
- * Handles special cases for integers, booleans, arrays, and bulk strings.
+ * Processes input character-by-character to properly handle arrays and quoted strings.
  *
  * @param str The string to encode
  * @return RESP-encoded string
  */
 std::string encode(const std::string& str) {
-  std::stringstream ssin(str);
-  std::vector<std::string> command_vec;
+  std::vector<std::string> tokens = tokenize(str);
+  std::vector<std::string> encoded_tokens;
 
-  while (ssin.good() && !ssin.eof()) {
-    std::string token;
-    ssin >> token;
-
-    // Check for empty tokens
-    if (token.empty()) continue;
-
-    // Encode the token based on its type
-    command_vec.push_back(encode_token(token));
+  for (const auto& token : tokens) {
+    encoded_tokens.push_back(encode_token(token));
   }
 
-  return encode_array(command_vec);
+  return encode_array(encoded_tokens);
 }
 
 /**
- * @brief Split raw input into tokens, respecting quoted substrings.
+ * @brief Split raw input into tokens, respecting quoted substrings and arrays.
  *
- * Handles unclosed quotes by collecting remainder as one token.
+ * Processes character-by-character to properly handle complex structures.
  */
 std::vector<std::string> tokenize(const std::string& input) {
   std::vector<std::string> tokens;
-  std::istringstream iss(input);
   std::string token;
-
   bool in_quotes = false;
-  std::string quoted_token;
+  bool in_array = false;
+  int array_depth = 0;
+  bool in_token = false;
 
-  while (iss >> token) {
-    // Check if token starts with a quote
-    if (!in_quotes && token.front() == '"') {
-      in_quotes = true;
-      quoted_token = token.substr(1);  // Remove leading quote
+  for (size_t i = 0; i < input.length(); ++i) {
+    char c = input[i];
 
-      // If it also ends with a quote, it's a complete quoted token
-      if (token.length() > 1 && token.back() == '"') {
-        in_quotes = false;
-        quoted_token = quoted_token.substr(0, quoted_token.length() - 1);  // Remove trailing quote
-        tokens.push_back(quoted_token);
+    // Handle quoted strings
+    if (c == '"') {
+      if (!in_quotes) {
+        // Starting a quoted string
+        if (!token.empty() && !in_array) {
+          // If we have a token already and we're starting quotes, save current token
+          tokens.push_back(token);
+          token.clear();
+        }
+        in_quotes = true;
+        token += c;  // Keep the quotes in the token
+      } else {
+        // Ending a quoted string
+        token += c;
+        if (!in_array) {
+          tokens.push_back(token);
+          token.clear();
+          in_quotes = false;
+        } else {
+          in_quotes = false;
+        }
       }
+      continue;
     }
-    // Check if token ends with a quote
-    else if (in_quotes && token.back() == '"') {
-      in_quotes = false;
-      quoted_token += " " + token.substr(0, token.length() - 1);  // Remove trailing quote
-      tokens.push_back(quoted_token);
+
+    // Handle arrays
+    if (c == '[' && !in_quotes) {
+      if (!token.empty() && array_depth == 0) {
+        // If we have a token already and starting a new array, save current token
+        tokens.push_back(token);
+        token.clear();
+      }
+      in_array = true;
+      array_depth++;
+      token += c;
+      continue;
     }
-    // If we're in the middle of a quoted string
-    else if (in_quotes) {
-      quoted_token += " " + token;
+
+    if (c == ']' && !in_quotes && in_array) {
+      token += c;
+      array_depth--;
+      if (array_depth == 0) {
+        in_array = false;
+        tokens.push_back(token);
+        token.clear();
+      }
+      continue;
     }
-    // Check if token is an array
-    else if (token.front() == '[' && token.back() != ']') {
-      // Start of array that spans multiple tokens
-      in_quotes = true;  // Not actually quotes, but we'll reuse the mechanism
-      quoted_token = token;
-    } else if (in_quotes && token.back() == ']') {
-      // End of multi-token array
-      in_quotes = false;
-      quoted_token += " " + token;
-      tokens.push_back(quoted_token);
+
+    // Handle whitespace
+    if (std::isspace(c) && !in_quotes && !in_array) {
+      if (!token.empty()) {
+        tokens.push_back(token);
+        token.clear();
+      }
+      continue;
     }
-    // Regular token, not part of a quoted string or array
-    else {
-      tokens.push_back(token);
-    }
+
+    // Add character to current token
+    token += c;
+    in_token = true;
   }
 
-  // If we're still in quotes after processing all tokens,
-  // add what we have (handles unclosed quotes)
-  if (in_quotes) {
-    tokens.push_back(quoted_token);
+  // Add any remaining token
+  if (!token.empty()) {
+    tokens.push_back(token);
   }
 
   return tokens;
@@ -243,40 +211,129 @@ std::vector<std::string> tokenize(const std::string& input) {
 /**
  * @brief Encode a single token with the appropriate RESP data type.
  *
- * Attempts to detect the data type and encode accordingly.
- * Note: For command arguments, even numeric values must be sent as bulk strings
- * according to the RESP protocol specification for commands.
+ * Detects the data type based on string content and encodes accordingly.
  *
  * @param token The token to encode
  * @return RESP-encoded string for the token
  */
 std::string encode_token(const std::string& token) {
+  // Handle quoted strings (remove quotes and encode as bulk string)
+  if (token.length() >= 2 && token.front() == '"' && token.back() == '"') {
+    return encode_bulk_string(token.substr(1, token.length() - 2));
+  }
   // Try to detect the data type
-  if (is_integer(token)) {
+  else if (is_integer(token)) {
     try {
-      // Parse as integer for validation, but still encode as bulk string
-      // as required by RESP protocol for command arguments
       int64_t num = std::stoll(token);
-      // Log for debugging (optional)
-      return encode_integer(num);  // Encode as integer
+      return encode_integer(num);
     } catch (const std::exception& e) {
-      // Fallback to string if overflow occurs
       return encode_bulk_string(token);
     }
   } else if (is_boolean(token)) {
-    return encode_boolean(token == "true");  // Encode as boolean
+    return encode_boolean(token == "true");
   } else if (is_array(token)) {
     // Parse the array and encode each element
     auto elements = parse_array(token);
     std::vector<std::string> encoded_elements;
     for (const auto& elem : elements) {
-      encoded_elements.push_back(elem);
+      // For elements inside array, we should detect their type
+      if (is_integer(elem)) {
+        try {
+          int64_t num = std::stoll(elem);
+          encoded_elements.push_back(std::to_string(num));
+        } catch (const std::exception&) {
+          encoded_elements.push_back(elem);
+        }
+      } else if (elem.length() >= 2 && elem.front() == '"' && elem.back() == '"') {
+        // Handle quoted strings in arrays
+        encoded_elements.push_back(elem.substr(1, elem.length() - 2));
+      } else {
+        encoded_elements.push_back(elem);
+      }
     }
-    return encode_array(encoded_elements);  // Encode as array
+    return encode_array(encoded_elements);
   } else {
     // Default to string
     return encode_bulk_string(token);
   }
+}
+
+/**
+ * @brief Parse a string array representation into vector of strings.
+ *
+ * Character-by-character parsing to properly handle nested structures.
+ *
+ * @param str String containing array in format [element1, element2, ...]
+ * @return Vector of array elements
+ */
+std::vector<std::string> parse_array(const std::string& str) {
+  std::vector<std::string> elements;
+
+  // Remove brackets
+  if (str.size() < 2 || str.front() != '[' || str.back() != ']') return elements;
+
+  std::string content = str.substr(1, str.size() - 2);
+
+  // Handle empty array
+  if (content.empty()) return elements;
+
+  std::string element;
+  bool in_quotes = false;
+  bool in_nested_array = false;
+  int nested_depth = 0;
+
+  for (size_t i = 0; i < content.length(); ++i) {
+    char c = content[i];
+
+    // Handle quoted strings
+    if (c == '"') {
+      in_quotes = !in_quotes;
+      element += c;
+      continue;
+    }
+
+    // Handle nested arrays
+    if (c == '[' && !in_quotes) {
+      in_nested_array = true;
+      nested_depth++;
+      element += c;
+      continue;
+    }
+
+    if (c == ']' && !in_quotes && in_nested_array) {
+      nested_depth--;
+      element += c;
+      if (nested_depth == 0) in_nested_array = false;
+      continue;
+    }
+
+    // Handle element separator
+    if (c == ',' && !in_quotes && !in_nested_array) {
+      // Trim whitespace
+      element.erase(0, element.find_first_not_of(" \t"));
+      size_t last = element.find_last_not_of(" \t");
+      if (last != std::string::npos) element.erase(last + 1);
+
+      elements.push_back(element);
+      element.clear();
+      continue;
+    }
+
+    // Add character to current element
+    element += c;
+  }
+
+  // Add final element if any
+  if (!element.empty()) {
+    // Trim whitespace
+    element.erase(0, element.find_first_not_of(" \t"));
+    size_t last = element.find_last_not_of(" \t");
+    if (last != std::string::npos) element.erase(last + 1);
+
+    elements.push_back(element);
+  }
+
+  return elements;
 }
 
 /**
@@ -291,21 +348,14 @@ std::string encode_token(const std::string& token) {
 std::string encode_command(const std::string& cmd, const std::vector<std::string>& args) {
   std::vector<std::string> all_elements;
   all_elements.push_back(cmd);
-
-  // Process each argument with type detection
-  for (const auto& arg : args) {
-    // For command arguments, we should always use bulk strings
-    // as required by the RESP protocol for command arguments
-    all_elements.push_back(arg);
-  }
-
+  all_elements.insert(all_elements.end(), args.begin(), args.end());
   return encode_array(all_elements);
 }
 
 /**
- * @brief Parse raw command tokens and encode via `encode_command`.
+ * @brief Parse raw command and encode as RESP command.
  *
- * Intelligently detects data types in arguments.
+ * Uses character-by-character parsing for accurate token detection.
  */
 std::string encode_raw_command(const std::string& raw_cmd) {
   std::vector<std::string> tokens = tokenize(raw_cmd);
